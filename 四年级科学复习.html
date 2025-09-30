@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四年级科学动画复习平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        body {
+            background-color: #f5f8ff;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #4a90e2;
+        }
+        .header h1 {
+            color: #4a90e2;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        /* 教师登录区域 */
+        .teacher-login {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .login-btn {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        .login-btn:hover {
+            background-color: #357abd;
+        }
+        /* 登录弹窗 */
+        .login-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .modal-content h2 {
+            color: #4a90e2;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .modal-btns {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .confirm-btn {
+            background-color: #4a90e2;
+            color: white;
+        }
+        .cancel-btn {
+            background-color: #eee;
+            color: #666;
+        }
+        /* 视频上传区域（默认隐藏） */
+        .upload-section {
+            display: none;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px dashed #ddd;
+        }
+        .upload-section h2 {
+            color: #4a90e2;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .upload-btn {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0 auto;
+            display: block;
+            transition: background 0.3s;
+        }
+        .upload-btn:hover {
+            background-color: #4cae4c;
+        }
+        #file-input {
+            display: none;
+        }
+        .upload-tip {
+            text-align: center;
+            color: #666;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        /* 视频列表区域 */
+        .video-section h2 {
+            color: #4a90e2;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        .video-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .video-card:hover {
+            transform: translateY(-5px);
+        }
+        .video-thumb {
+            width: 100%;
+            height: 160px;
+            background-color: #000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .video-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+        .play-icon {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E") no-repeat center;
+            background-size: contain;
+            opacity: 0.9;
+        }
+        .video-info {
+            padding: 15px;
+        }
+        .video-title {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .video-meta {
+            font-size: 0.9rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+        /* 视频播放弹窗 */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .video-container {
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+        }
+        .close-video {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        #main-video {
+            width: 100%;
+            border-radius: 8px;
+            outline: none;
+        }
+        /* 提示信息 */
+        .tip {
+            text-align: center;
+            padding: 50px 20px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+        .tip-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 15px;
+            }
+            .video-thumb {
+                height: 130px;
+            }
+            .play-icon {
+                width: 45px;
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部区域 -->
+        <div class="header">
+            <h1>四年级科学动画复习平台</h1>
+            <p>点击视频即可观看，轻松复习科学知识</p>
+        </div>
+
+        <!-- 教师登录按钮 -->
+        <div class="teacher-login">
+            <button class="login-btn" id="login-btn">教师登录</button>
+        </div>
+
+        <!-- 登录弹窗 -->
+        <div class="login-modal" id="login-modal">
+            <div class="modal-content">
+                <h2>教师登录</h2>
+                <div class="form-group">
+                    <label for="username">账号</label>
+                    <input type="text" id="username" placeholder="请输入教师账号">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" placeholder="请输入登录密码">
+                </div>
+                <div class="modal-btns">
+                    <button class="modal-btn cancel-btn" id="cancel-login">取消</button>
+                    <button class="modal-btn confirm-btn" id="confirm-login">登录</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 视频上传区域（教师登录后显示） -->
+        <div class="upload-section" id="upload-section">
+            <h2>科学动画上传</h2>
+            <label for="file-input" class="upload-btn">选择本地视频（支持48个）</label>
+            <input type="file" id="file-input" accept="video/*" multiple>
+            <p class="upload-tip">支持MP4、AVI、MOV等常见视频格式，单个视频建议不超过200MB</p>
+            <div id="upload-status" class="tip" style="display: none;"></div>
+        </div>
+
+        <!-- 视频列表区域 -->
+        <div class="video-section">
+            <h2>科学动画复习列表</h2>
+            <div class="video-grid" id="video-grid">
+                <!-- 初始提示（无视频时显示） -->
+                <div class="tip" id="empty-tip">
+                    <div class="tip-icon">📹</div>
+                    <p>暂无科学动画，教师登录后可上传视频</p>
+                </div>
+                <!-- 视频卡片将通过JS动态添加 -->
+            </div>
+        </div>
+
+        <!-- 视频播放弹窗 -->
+        <div class="video-modal" id="video-modal">
+            <div class="video-container">
+                <button class="close-video" id="close-video">&times;</button>
+                <video id="main-video" controls autoplay>
+                    您的浏览器不支持HTML5视频播放，请更换浏览器重试。
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 核心元素获取
+        const loginBtn = document.getElementById('login-btn');
+        const loginModal = document.getElementById('login-modal');
+        const cancelLogin = document.getElementById('cancel-login');
+        const confirmLogin = document.getElementById('confirm-login');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const uploadSection = document.getElementById('upload-section');
+        const fileInput = document.getElementById('file-input');
+        const uploadStatus = document.getElementById('upload-status');
+        const videoGrid = document.getElementById('video-grid');
+        const emptyTip = document.getElementById('empty-tip');
+        const videoModal = document.getElementById('video-modal');
+        const mainVideo = document.getElementById('main-video');
+        const closeVideo = document.getElementById('close-video');
+
+        // 教师账号密码（固定）
+        const TEACHER_ACCOUNT = 'xinyu';
+        const TEACHER_PASSWORD = 'kexue123';
+
+        // 存储已上传的视频信息
+        let uploadedVideos = JSON.parse(localStorage.getItem('scienceVideos')) || [];
+        
+        // 检查登录状态
+        let isTeacherLoggedIn = localStorage.getItem('teacherLoggedIn') === 'true';
+        
+        // 页面加载时初始化
+        window.addEventListener('load', () => {
+            renderVideoList();
+            checkLoginStatus();
+        });
+        
+        // 检查登录状态并更新界面
+        function checkLoginStatus() {
+            if (isTeacherLoggedIn) {
+                uploadSection.style.display = 'block';
+                loginBtn.textContent = '已登录（教师）';
+                loginBtn.disabled = true;
+                loginBtn.style.backgroundColor = '#666';
+            } else {
+                uploadSection.style.display = 'none';
+                loginBtn.textContent = '教师登录';
+                loginBtn.disabled = false;
+                loginBtn.style.backgroundColor = '#4a90e2';
+            }
+        }
+
+        // 登录按钮点击 - 打开登录弹窗
+        loginBtn.addEventListener('click', () => {
+            if (!isTeacherLoggedIn) {
+                loginModal.style.display = 'flex';
+                usernameInput.value = '';
+                passwordInput.value = '';
+                usernameInput.focus();
+            }
+        });
+
+        // 取消登录 - 关闭登录弹窗
+        cancelLogin.addEventListener('click', () => {
+            loginModal.style.display = 'none';
+        });
+
+        // 点击弹窗外部关闭登录弹窗
+        loginModal.addEventListener('click', (e) => {
+            if (e.target === loginModal) {
+                loginModal.style.display = 'none';
+            }
+        });
+
+        // 确认登录 - 验证账号密码
+        confirmLogin.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!username || !password) {
+                alert('请输入完整的账号和密码');
+                return;
+            }
+
+            if (username === TEACHER_ACCOUNT && password === TEACHER_PASSWORD) {
+                // 登录成功
+                isTeacherLoggedIn = true;
+                localStorage.setItem('teacherLoggedIn', 'true');
+                loginModal.style.display = 'none';
+                checkLoginStatus();
+                alert('登录成功！可上传科学动画视频');
+            } else {
+                // 登录失败
+                alert('账号或密码错误，请重新输入');
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        });
+
+        // 视频文件选择 - 处理上传
+        fileInput.addEventListener('change', (e) => {
+            if (!isTeacherLoggedIn) {
+                alert('请先登录教师账号才能上传视频');
+                return;
+            }
+            
+            const files = e.target.files;
+            if (!files.length) return;
+
+            // 检查视频数量（最多48个）
+            const remainingCount = 48 - uploadedVideos.length;
+            if (files.length > remainingCount) {
+                alert(`最多只能上传48个视频，当前还能上传${remainingCount}个，请重新选择`);
+                fileInput.value = '';
+                return;
+            }
+
+            // 显示上传状态
+            uploadStatus.style.display = 'block';
+            uploadStatus.innerHTML = '<div class="tip-icon">⏳</div><p>正在处理视频...</p>';
+
+            // 处理每个选中的视频文件
+            setTimeout(() => {
+                let newVideos = [];
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    // 检查文件类型（视频）
+                    if (!file.type.startsWith('video/')) {
+                        alert(`"${file.name}" 不是视频文件，请选择正确的视频格式`);
+                        continue;
+                    }
+                    // 检查文件大小（建议不超过200MB）
+                    const maxSize = 200 * 1024 * 1024; // 200MB
+                    if (file.size > maxSize) {
+                        alert(`"${file.name}" 文件过大（超过200MB），请压缩后上传`);
+                        continue;
+                    }
+                    // 创建视频信息
+                    const videoInfo = {
+                        id: Date.now() + i, // 唯一ID
+                        name: file.name.replace(/\.[^/.]+$/, ""), // 去除后缀的文件名作为标题
+                        size: (file.size / (1024 * 1024)).toFixed(2), // 文件大小（MB）
+                        time: new Date().toLocaleString() // 上传时间
+                    };
+                    // 使用文件路径作为URL（实际应用中应上传到服务器）
+                    videoInfo.url = URL.createObjectURL(file);
+                    newVideos.push(videoInfo);
+                }
+
+                // 更新视频列表并保存到本地存储
+                if (newVideos.length > 0) {
+                    uploadedVideos = [...uploadedVideos, ...newVideos];
+                    // 保存到本地存储（不保存临时URL）
+                    const videosToSave = uploadedVideos.map(video => {
+                        return {
+                            id: video.id,
+                            name: video.name,
+                            size: video.size,
+                            time: video.time
+                        };
+                    });
+                    localStorage.setItem('scienceVideos', JSON.stringify(videosToSave));
+                    
+                    // 更新UI
+                    renderVideoList();
+                    uploadStatus.innerHTML = '<div class="tip-icon">✅</div><p>视频上传成功！</p>';
+                    
+                    // 3秒后隐藏上传状态
+                    setTimeout(() => {
+                        uploadStatus.style.display = 'none';
+                    }, 3000);
+                } else {
+                    uploadStatus.innerHTML = '<div class="tip-icon">⚠️</div><p>没有成功上传任何视频</p>';
+                }
+            }, 500); // 模拟处理时间
+        });
+
+        // 渲染视频列表
+        function renderVideoList() {
+            // 清空视频网格
+            videoGrid.innerHTML = '';
+            
+            // 检查是否有视频
+            if (uploadedVideos.length === 0) {
+                videoGrid.innerHTML = `
+                    <div class="tip" id="empty-tip">
+                        <div class="tip-icon">📹</div>
+                        <p>暂无科学动画，教师登录后可上传视频</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 添加视频卡片
+            uploadedVideos.forEach(video => {
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card';
+                videoCard.innerHTML = `
+                    <div class="video-thumb" data-id="${video.id}">
+                        <div class="play-icon"></div>
+                    </div>
+                    <div class="video-info">
+                        <h3 class="video-title">${video.name}</h3>
+                        <div class="video-meta">
+                            <span>${video.size} MB</span>
+                            <span>${video.time}</span>
+                        </div>
+                    </div>
+                `;
+                videoGrid.appendChild(videoCard);
+                
+                // 添加点击事件
+                videoCard.querySelector('.video-thumb').addEventListener('click', () => {
+                    // 查找视频信息
+                    const videoInfo = uploadedVideos.find(v => v.id === video.id);
+                    if (videoInfo) {
+                        // 设置视频源并播放
+                        mainVideo.src = videoInfo.url;
+                        videoModal.style.display = 'flex';
+                    }
+                });
+            });
+        }
+
+        // 关闭视频播放窗口
+        closeVideo.addEventListener('click', () => {
+            videoModal.style.display = 'none';
+            mainVideo.pause();
+        });
+
+        // 点击视频模态框外部关闭
+        videoModal.addEventListener('click', (e) => {
+            if (e.target === videoModal) {
+                videoModal.style.display = 'none';
+                mainVideo.pause();
+            }
+        });
+    </script>
+</body>
+</html>
